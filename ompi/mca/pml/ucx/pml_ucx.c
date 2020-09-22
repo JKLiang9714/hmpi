@@ -5,6 +5,7 @@
  *                         reserved.
  * Copyright (c) 2018      Research Organization for Information Science
  *                         and Technology (RIST).  All rights reserved.
+ * Copyright (c) 2020      Huawei Technologies Co., Ltd.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -526,9 +527,8 @@ int mca_pml_ucx_del_comm(struct ompi_communicator_t* comm)
     return OMPI_SUCCESS;
 }
 
-int mca_pml_ucx_irecv_init(void *buf, size_t count, ompi_datatype_t *datatype,
-                             int src, int tag, struct ompi_communicator_t* comm,
-                             struct ompi_request_t **request)
+int mca_pml_ucx_irecv_init(void *buf, size_t count, ompi_datatype_t *datatype, int src, int tag,
+                           struct ompi_communicator_t* comm, struct ompi_request_t **request)
 {
     mca_pml_ucx_persistent_request_t *req;
 
@@ -609,20 +609,20 @@ int mca_pml_ucx_recv(void *buf, size_t count, ompi_datatype_t *datatype, int src
 static inline const char *mca_pml_ucx_send_mode_name(mca_pml_base_send_mode_t mode)
 {
     switch (mode) {
-    case MCA_PML_BASE_SEND_SYNCHRONOUS:
-        return "sync";
-    case MCA_PML_BASE_SEND_COMPLETE:
-        return "complete";
-    case MCA_PML_BASE_SEND_BUFFERED:
-        return "buffered";
-    case MCA_PML_BASE_SEND_READY:
-        return "ready";
-    case MCA_PML_BASE_SEND_STANDARD:
-        return "standard";
-    case MCA_PML_BASE_SEND_SIZE:
-        return "size";
-    default:
-        return "unknown";
+        case MCA_PML_BASE_SEND_SYNCHRONOUS:
+            return "sync";
+        case MCA_PML_BASE_SEND_COMPLETE:
+            return "complete";
+        case MCA_PML_BASE_SEND_BUFFERED:
+            return "buffered";
+        case MCA_PML_BASE_SEND_READY:
+            return "ready";
+        case MCA_PML_BASE_SEND_STANDARD:
+            return "standard";
+        case MCA_PML_BASE_SEND_SIZE:
+            return "size";
+        default:
+            return "unknown";
     }
 }
 
@@ -667,9 +667,8 @@ int mca_pml_ucx_isend_init(const void *buf, size_t count, ompi_datatype_t *datat
     return OMPI_SUCCESS;
 }
 
-static ucs_status_ptr_t
-mca_pml_ucx_bsend(ucp_ep_h ep, const void *buf, size_t count, 
-                  ompi_datatype_t *datatype, uint64_t pml_tag)
+static ucs_status_ptr_t mca_pml_ucx_bsend(ucp_ep_h ep, const void *buf, size_t count,
+                                          ompi_datatype_t *datatype, uint64_t pml_tag)
 {
     ompi_request_t *req;
     void *packed_data;
@@ -797,7 +796,8 @@ mca_pml_ucx_send_nb(ucp_ep_h ep, const void *buf, size_t count,
         return OMPI_SUCCESS;
     } else if (!UCS_PTR_IS_ERR(req)) {
         PML_UCX_VERBOSE(8, "got request %p", (void*)req);
-        MCA_COMMON_UCX_WAIT_LOOP(req, ompi_pml_ucx.ucp_worker, "ucx send", ompi_request_free(&req));
+        MCA_COMMON_UCX_WAIT_LOOP(req, OPAL_COMMON_UCX_REQUEST_TYPE_UCP, ompi_pml_ucx.ucp_worker, "ucx send",
+            ompi_request_free(&req));
     } else {
         PML_UCX_ERROR("ucx send failed: %s", ucs_status_string(UCS_PTR_STATUS(req)));
         return OMPI_ERROR;
@@ -820,7 +820,7 @@ mca_pml_ucx_send_nbr(ucp_ep_h ep, const void *buf, size_t count,
         return OMPI_SUCCESS;
     }
 
-    MCA_COMMON_UCX_WAIT_LOOP(req, ompi_pml_ucx.ucp_worker, "ucx send", (void)0);
+    MCA_COMMON_UCX_WAIT_LOOP(req, OPAL_COMMON_UCX_REQUEST_TYPE_UCP, ompi_pml_ucx.ucp_worker, "ucx send", (void)0);
 }
 #endif
 
@@ -928,8 +928,7 @@ int mca_pml_ucx_improbe(int src, int tag, struct ompi_communicator_t* comm,
 }
 
 int mca_pml_ucx_mprobe(int src, int tag, struct ompi_communicator_t* comm,
-                         struct ompi_message_t **message,
-                         ompi_status_public_t* mpi_status)
+                       struct ompi_message_t **message, ompi_status_public_t* mpi_status)
 {
     ucp_tag_t ucp_tag, ucp_tag_mask;
     ucp_tag_recv_info_t info;
@@ -951,8 +950,7 @@ int mca_pml_ucx_mprobe(int src, int tag, struct ompi_communicator_t* comm,
 }
 
 int mca_pml_ucx_imrecv(void *buf, size_t count, ompi_datatype_t *datatype,
-                         struct ompi_message_t **message,
-                         struct ompi_request_t **request)
+                       struct ompi_message_t **message, struct ompi_request_t **request)
 {
     ompi_request_t *req;
 
@@ -974,8 +972,7 @@ int mca_pml_ucx_imrecv(void *buf, size_t count, ompi_datatype_t *datatype,
 }
 
 int mca_pml_ucx_mrecv(void *buf, size_t count, ompi_datatype_t *datatype,
-                        struct ompi_message_t **message,
-                        ompi_status_public_t* status)
+                      struct ompi_message_t **message, ompi_status_public_t* status)
 {
     ompi_request_t *req;
 
