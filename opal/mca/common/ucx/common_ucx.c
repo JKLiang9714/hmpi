@@ -1,5 +1,6 @@
 /*
  * Copyright (C) Mellanox Technologies Ltd. 2018. ALL RIGHTS RESERVED.
+ * Copyright (c) 2020      Huawei Technologies Co., Ltd.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -17,7 +18,6 @@
 
 #include <ucm/api/ucm.h>
 
-/***********************************************************************/
 
 extern mca_base_framework_t opal_memory_base_framework;
 
@@ -163,8 +163,7 @@ OPAL_DECLSPEC int opal_common_ucx_mca_pmix_fence(ucp_worker_h worker)
     volatile int fenced = 0;
     int ret = OPAL_SUCCESS;
 
-    if (OPAL_SUCCESS != (ret = opal_pmix.fence_nb(NULL, 0,
-                    opal_common_ucx_mca_fence_complete_cb, (void*)&fenced))){
+    if (OPAL_SUCCESS != (ret = opal_pmix.fence_nb(NULL, 0, opal_common_ucx_mca_fence_complete_cb, (void*)&fenced))) {
         return ret;
     }
 
@@ -175,13 +174,14 @@ OPAL_DECLSPEC int opal_common_ucx_mca_pmix_fence(ucp_worker_h worker)
     return ret;
 }
 
-static void opal_common_ucx_wait_all_requests(void **reqs, int count, ucp_worker_h worker)
+static void opal_common_ucx_wait_all_requests(void **reqs, int count, ucp_worker_h worker,
+    enum opal_common_ucx_req_type type)
 {
     int i;
 
     MCA_COMMON_UCX_VERBOSE(2, "waiting for %d disconnect requests", count);
     for (i = 0; i < count; ++i) {
-        opal_common_ucx_wait_request(reqs[i], worker, "ucp_disconnect_nb");
+        opal_common_ucx_wait_request(reqs[i], worker, type, "ucp_disconnect_nb");
         reqs[i] = NULL;
     }
 }
@@ -225,7 +225,7 @@ OPAL_DECLSPEC int opal_common_ucx_del_procs_nofence(opal_common_ucx_del_proc_t *
             } else {
                 dreqs[num_reqs++] = dreq;
                 if (num_reqs >= max_disconnect) {
-                    opal_common_ucx_wait_all_requests(dreqs, num_reqs, worker);
+                    opal_common_ucx_wait_all_requests(dreqs, num_reqs, worker, OPAL_COMMON_UCX_REQUEST_TYPE_UCP);
                     num_reqs = 0;
                 }
             }
@@ -233,8 +233,7 @@ OPAL_DECLSPEC int opal_common_ucx_del_procs_nofence(opal_common_ucx_del_proc_t *
     }
     /* num_reqs == 0 is processed by opal_common_ucx_wait_all_requests routine,
      * so suppress coverity warning */
-    /* coverity[uninit_use_in_call] */
-    opal_common_ucx_wait_all_requests(dreqs, num_reqs, worker);
+    opal_common_ucx_wait_all_requests(dreqs, num_reqs, worker, OPAL_COMMON_UCX_REQUEST_TYPE_UCP);
     free(dreqs);
 
     return OPAL_SUCCESS;

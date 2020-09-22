@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2013      Mellanox Technologies, Inc.
  *                         All rights reserved.
+ * Copyright (c) 2020      Huawei Technologies Co., Ltd.  All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -51,5 +52,6 @@ int mca_atomic_ucx_cswap(shmem_ctx_t ctx,
     }
 
     return opal_common_ucx_wait_request(status_ptr, ucx_ctx->ucp_worker[0],
+                                        OPAL_COMMON_UCX_REQUEST_TYPE_UCP,
                                         "ucp_atomic_fetch_nb");
 }

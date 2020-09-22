@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2017      Mellanox Technologies, Inc.
  *                         All rights reserved.
+ * Copyright (c) 2020      Huawei Technologies Co., Ltd.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -226,7 +227,7 @@ segment_create(map_segment_t *ds_buf,
     int ret;
 
 #if HAVE_UCX_DEVICE_MEM
-    int ret = OSHMEM_ERROR;
+    ret = OSHMEM_ERROR;
     if (hint & SHMEM_HINT_DEVICE_NIC_MEM) {
         if (size > UINT_MAX) {
             return OSHMEM_ERR_BAD_PARAM;
